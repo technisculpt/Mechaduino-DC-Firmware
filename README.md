@@ -19,10 +19,9 @@ Serial1 uses the step/dir pins which were previously used for stepper control an
 
 Controller firmware available in commander directory. Uses arduino Esplora
 
-Serial1 frame structure: (currently only velocity control)
-
-
 ## Velocity Commands (Serial1, rx & tx):
+
+Serial1 frame structure: (currently only velocity control)
 
 char command | velocity | terminator ('q')
 
