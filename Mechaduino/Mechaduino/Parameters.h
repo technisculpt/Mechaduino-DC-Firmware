@@ -8,42 +8,23 @@
 
 //----Current Parameters-----
 
-extern volatile float Ts;
 extern volatile float Fs;
 
 extern volatile float pKp;
 extern volatile float pKi;
 extern volatile float pKd;
 extern volatile float pLPF;
-
+extern volatile float pI_limit;
 
 extern volatile float vKp;
 extern volatile float vKi;
 extern volatile float vKd;
 extern volatile float vLPF;
 
-extern const float lookup[];
-
-
 extern volatile float pLPFa;
 extern volatile float pLPFb;
 extern volatile float vLPFa;
 extern volatile float vLPFb;
-
-
-extern const int spr; //  200 steps per revolution
-extern const float aps; // angle per step
-extern int cpr; //counts per rev
-extern const float stepangle;
-
-extern volatile float PA;  //
-
-extern const float iMAX;
-extern const float rSense;
-extern volatile int uMAX;
-
-
-extern const int sin_1[];
 
 //Defines for pins:
 

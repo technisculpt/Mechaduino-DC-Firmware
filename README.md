@@ -1,9 +1,6 @@
 ![image](images/header.PNG)
 
-New release 11/26/2018!  The calibration table is now stored in flash memory!  (Many thanks to osresearch!) We've also fixed a couple of small bugs.
-Here are some preliminary instructions on how to get your Mechaduino up and running.  For more details, see the Mechaduino Manual above!
-
-![image](images/example1.gif)
+This fork contributes DC motor velocity control. This frees up the step/dir pins which are used instead as a second UART which has been implemented for constant velocity (RPM) setpoint input. It also frees up one of the motor drivers channels, could potentially use both in parallel to drive higher current. - Mark Lagana 10/1/23
 
 ## Bootloader:
 You will need to make sure your Mechaduino has the latest Arduino Zero bootloader.  If you got your Mechaduino from Tropical Labs, it will already have this! Otherwise you will need an Atmel-ICE or similar SWD programmer...
@@ -12,60 +9,62 @@ You will need to make sure your Mechaduino has the latest Arduino Zero bootloade
 
 Compile the Mechaduino firmware in the Arduino IDE and upload to your Mechaduino.  (Mechaduino will appear as an Arduino Zero.)  
 
-New firmware is in the default "master" branch. Older versions are available [here](https://github.com/jcchurch13/Mechaduino-Firmware/releases). 
+Original stepper firmware and older versions are available [here](https://github.com/jcchurch13/Mechaduino-Firmware/releases). 
+
+## DC Motor Control:
+
+Added control option from Serial1 UART channel
+
+Serial1 uses the step/dir pins which were previously used for stepper control and are level shifted to 5v
+
+Controller firmware available in commander directory. Uses arduino Esplora
+
+Serial1 frame structure: (currently only velocity control)
 
 
-## Calibration Routine:
+## Velocity Commands (Serial1, rx & tx):
 
-The first thing you will need to do is run the encoder calibration routine.
+char command | velocity | terminator ('q')
 
-With the Mechaduino connected to your computer, open a serial monitor (115200 baud) in the Arduino IDE.  You will need to provide V+ to the Mechaduino to power the motor drivers (needed to calibrate).  A menu should appear explaining the basic commands (you can call the menu up at any time by typing 'm').  Type "s" and press enter a couple times to verify that everything is working.  The Mechaduino should step like a stepper.  It is currently in open loop mode.  press "d" and the stepping direction will change.  
+velocity (RPM) is an unsigned int
 
-Now, make sure nothing will touch the Mechaduino’s shaft during the calibration routine. If possible, completely disconnect any load that is attached to the Mechaduino’s shaft.  Type "c" to start the calibration routine. The Mechaduino will now step through all full steps to calibrate the encoder. In the latest version of the firmware, the calibration table will automatically be stored in non-volatile flash memory. When this routine is complete, your Mechaduino is now calibrated!
+d - clockwise (closed loop)
 
-## Basic Commands:
+u - anti clockwise (closed loop)
 
-As long as you have "serialCheck();" in your main loop, you can use the following built in commands to control the mechaduino from a serial monitor:
+x - clockwise (open loop)
 
-  
-s - step (steps one full step in open loop mode)
+z - anti clockwise (open loop)
 
-d - dir (changes step direction in open loop mode)
+s - stop
 
-p - print angle [step count] , [assumed angle] , [encoder reading]
+## Basic Commands (Serial0, USB):
 
+Also Controlled via a SerialUSB terminal
+Implemented SerialUSB commands are:
 
-c - calibration routine
+p  -  print [angle] , [encoder reading]
 
-e - check encoder diagnostics
+e  -  check encoder diagnositics
 
-q - parameter query (prints current PID values and cal table)
+q  -  parameter query
 
 
 x  -  position mode
 
-v - velocity mode
-
-t - torque mode
+v  -  velocity mode
 
 
-y - enable control loop (enter closed loop mode)
+y  -  enable control loop
 
-n - disable control loop (go back to open loop mode)
-
-r - enter new setpoint (new setpoint for control loop)
+n  -  disable control loop
 
 
-j - step response
+r  -  enter new setpoint
 
-k - edit controller gains*
+k  -  edit controller gains -- note, these edits are stored in volatile memory and will be reset if power is cycled
 
-g - generate sine commutation table
-
-m - print main menu
-
-  ...see serialCheck() in Utils for more details
- 
+m  -  print main menu
 
 
 ##License

@@ -11,85 +11,62 @@
   Many thanks to all contributors!
   --------------------------------------------------------------
   
-  Controlled via a SerialUSB terminal at 115200 baud.
+  This fork contributes DC motor velocity control - Mark Lagana 10/1/23
+ 
+  * Added control option from Serial1 UART channel
+  * Serial1 uses the step/dir pins which were previously used for stepper control and are level shifted to 5v
+  * Controller code available in commander directory. Uses arduino Esplora
 
-  Implemented serial commands are:
+  Serial1 frame structure: (currently only velocity control)
 
- s  -  step
- d  -  dir
- p  -  print [step number] , [encoder reading]
+  char command | velocity | terminator ('q')
 
- c  -  calibration routine
- e  -  check encoder diagnositics
- q  -  parameter query
+  velocity (RPM) is an unsigned int (cast to string to transmit)
 
- x  -  position mode
- v  -  velocity mode
- t  -  torque mode
+  commands:
+  d - clockwise (closed loop)
+  u - anti clockwise (closed loop)
+  x - clockwise (open loop)
+  z - anti clockwise (open loop)
+  s - stop
 
- y  -  enable control loop
- n  -  disable control loop
- r  -  enter new setpoint
+  Also Controlled via a SerialUSB terminal
+  Implemented SerialUSB commands are:
 
- j  -  step response
- k  -  edit controller gains -- note, these edits are stored in volatile memory and will be reset if power is cycled
- g  -  generate sine commutation table
- m  -  print main menu
-
-
-  ...see serialCheck() in Utils for more details
+  p  -  print [angle] , [encoder reading]
+  e  -  check encoder diagnositics
+  q  -  parameter query
+  x  -  position mode
+  v  -  velocity mode
+  y  -  enable control loop
+  n  -  disable control loop
+  r  -  enter new setpoint
+  k  -  edit controller gains -- note, these edits are stored in volatile memory and will be reset if power is cycled
+  m  -  print main menu
 
 */
 
 #include "Utils.h"
 #include "Parameters.h"
-#include "State.h"
+#include "State.h" 
 #include "analogFastWrite.h"
-
-//////////////////////////////////////
-/////////////////SETUP////////////////
-//////////////////////////////////////
-
 
 void setup()        // This code runs once at startup
 {                         
-   
   digitalWrite(ledPin,HIGH);        // turn LED on 
   setupPins();                      // configure pins
   setupTCInterrupts();              // configure controller interrupt
-
-  SerialUSB.begin(115200);          
+  SerialUSB.begin(9600);
+  Serial1.begin(115200);          
   delay(3000);                      // This delay seems to make it easier to establish a connection when the Mechaduino is configured to start in closed loop mode.  
-  serialMenu();                     // Prints menu to serial monitor
   setupSPI();                       // Sets up SPI for communicating with encoder
   digitalWrite(ledPin,LOW);         // turn LED off 
-  
-  // spot check some of the lookup table to decide if it has been filled in
-  if (lookup[0] == 0 && lookup[128] == 0 && lookup[1024] == 0)
-    SerialUSB.println("WARNING: Lookup table is empty! Run calibration");
-
-  // Uncomment the below lines as needed for your application.
-  // Leave commented for initial calibration and tuning.
-  
-  //    configureStepDir();           // Configures setpoint to be controlled by step/dir interface
-  //    configureEnablePin();         // Active low, for use wath RAMPS 1.4 or similar
-  //     enableTCInterrupts();         // uncomment this line to start in closed loop 
-  //    mode = 'x';                   // start in position mode
-
+  SerialUSB.println("Start");
+  mode = 'v';                       // start in velocity mode
 }
-  
-
-
-//////////////////////////////////////
-/////////////////LOOP/////////////////
-//////////////////////////////////////
-
 
 void loop()                 // main loop
 {
-
-  serialCheck();              //must have this execute in loop for serial commands to function
-
-  //r=0.1125*step_count;      //Don't use this anymore. Step interrupts enabled above by "configureStepDir()", adjust step size ("stepangle")in parameters.cpp
-
+  serialCheck_2wire(); // check for machine to machine control, uart (rx, tx)
+  serialCheck_usb(); // intended for human to machine control uart (usb)
 }
