@@ -1,6 +1,6 @@
 ![image](images/header.PNG)
 
-This fork contributes DC motor velocity control. This frees up the step/dir pins which are used instead as a second UART which has been implemented for constant velocity (RPM) setpoint input. It also frees up one of the motor drivers channels, could potentially use both in parallel to drive higher current. - Mark Lagana 10/1/23
+This fork demonstrates DC motor position and velocity control. This frees up the step/dir pins which are used instead as a second UART which has been implemented for constant velocity (RPM) setpoint input. It also frees up one of the motor drivers channels, could potentially use both in parallel to drive higher current. - Mark Lagana 10/1/23
 
 ## Bootloader:
 You will need to make sure your Mechaduino has the latest Arduino Zero bootloader.  If you got your Mechaduino from Tropical Labs, it will already have this! Otherwise you will need an Atmel-ICE or similar SWD programmer...
